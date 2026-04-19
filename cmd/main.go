@@ -11,6 +11,9 @@ import (
 	"syscall"
 
 	"github.com/Linus-Regander/Go-Microservice/cmd/config"
+	"github.com/Linus-Regander/Go-Microservice/internal/api/handler"
+	"github.com/Linus-Regander/Go-Microservice/internal/api/router"
+	"github.com/go-chi/chi/v5"
 )
 
 const serviceName = "go-microservice"
@@ -61,6 +64,20 @@ func main() {
 	service.Config = cfg
 	service.Logger = startupLogger
 
+	//
+	// Service API.
+	//
+
+	mainRouter := chi.NewRouter()
+
+	serviceRouter := router.New(handler.New(service.Logger, service.New()))
+	mainPath, userAPI := serviceRouter.SetupChi()
+
+	mainRouter.Group(func(r chi.Router) {
+		r.Route("/service", func(r chi.Router) {
+			r.Mount(mainPath, userAPI)
+		})
+	})
 	//
 	// Service Startup.
 	//
