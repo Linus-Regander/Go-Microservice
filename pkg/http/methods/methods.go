@@ -9,8 +9,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Linus-Regander/Go-Microservice/internal/api/model/model"
+	"github.com/Linus-Regander/Go-Microservice/internal/api/model/user"
 	internalModel "github.com/Linus-Regander/Go-Microservice/pkg/http/model"
+
 	"github.com/go-chi/chi/v5"
 )
 
@@ -51,7 +52,7 @@ func Authorized(ctx context.Context) error {
 
 // UrlParam returns a url param.
 func UrlParam(r *http.Request) (string, error) {
-	userId := chi.URLParam(r, model.UserIdParamKey)
+	userId := chi.URLParam(r, user.IdParamKey)
 
 	if strings.TrimSpace(userId) == "" {
 		return "", errors.New(fmt.Sprintf("%w: %s", internalModel.ErrMissingURLParam.Error(), userId))

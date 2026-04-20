@@ -1,11 +1,11 @@
-package model
+package user
 
 const (
 	//
 	// URL Params.
 	//
 
-	UserIdParamKey = "userId"
+	IdParamKey = "id"
 )
 
 // UserParams holds the structure of user params.
