@@ -11,6 +11,11 @@ import (
 	"syscall"
 
 	"github.com/Linus-Regander/Go-Microservice/cmd/config"
+	"github.com/Linus-Regander/Go-Microservice/internal/api/handler"
+	"github.com/Linus-Regander/Go-Microservice/internal/api/router"
+	"github.com/Linus-Regander/Go-Microservice/internal/api/service"
+	"github.com/go-chi/chi/v5"
+	"github.com/sanity-io/litter"
 )
 
 const serviceName = "go-microservice"
@@ -28,7 +33,7 @@ func main() {
 
 	var err error
 
-	service := &Service{
+	microService := &Service{
 		Name: serviceName,
 	}
 
@@ -58,15 +63,39 @@ func main() {
 		return
 	}
 
-	service.Config = cfg
-	service.Logger = startupLogger
+	microService.Config = cfg
+	microService.Logger = startupLogger
+
+	//
+	// Service API.
+	//
+
+	mainRouter := chi.NewRouter()
+
+	serviceRouter := router.New(handler.New(microService.Logger, service.New(microService.Logger, nil)))
+	mainPath, userAPI := serviceRouter.SetupChi()
+
+	mainRouter.Group(func(r chi.Router) {
+		r.Route("/service", func(r chi.Router) {
+			r.Mount(mainPath, userAPI)
+		})
+	})
+
+	routeMap, err := routes(mainRouter)
+	if err != nil {
+		startupLogger.Print(fmt.Errorf("setup config err: %w", err))
+
+		return
+	}
+
+	litter.Dump(routeMap)
 
 	//
 	// Service Startup.
 	//
 
 	srv := &http.Server{
-		Addr: service.Config.Service.Port,
+		Addr: microService.Config.Service.Port,
 	}
 
 	go func() {
@@ -79,11 +108,11 @@ func main() {
 		defer shutdownCancelCtx()
 
 		if err = srv.Shutdown(shutdownCtx); err != nil {
-			service.Logger.Print(fmt.Errorf("Shutdown recieved error: %w", err))
+			microService.Logger.Print(fmt.Errorf("Shutdown recieved error: %w", err))
 
 			return
 		} else {
-			service.Logger.Print("Server shutdown successfully")
+			microService.Logger.Print("Server shutdown successfully")
 
 			return
 		}
@@ -92,6 +121,24 @@ func main() {
 	fmt.Println("Service successfully started")
 
 	<-shutdown()
+}
+
+func routes(r *chi.Mux) (map[string]string, error) {
+	var (
+		err      error
+		routeMap = make(map[string]string)
+	)
+
+	err = chi.Walk(r, func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+		routeMap[route] = method
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return routeMap, nil
 }
 
 func shutdown() <-chan os.Signal {
