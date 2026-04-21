@@ -8,10 +8,10 @@ const (
 	IdParamKey = "id"
 )
 
-// UserParams holds the structure of user params.
-type UserParams struct {
-	ID       string `json:"id"`
-	Name     string `json:"name"`
-	Username string `json:"username"`
-	Role     string `json:"role"`
+// Params holds the structure of user params.
+type Params struct {
+	ID       string `json:"id" db:"id"`
+	Name     string `json:"name" db:"name"`
+	Username string `json:"username" db:"username"`
+	Role     string `json:"role" db:"role"`
 }
