@@ -20,7 +20,7 @@ type (
 		DeleteUser(ctx context.Context, userId string) error
 		InsertUser(ctx context.Context, userRequest userModel.UserRequest) error
 		UpdateUser(ctx context.Context, userRequest userModel.UserRequest) error
-		SelectAllUsers(ctx context.Context, params userModel.UserParams) (userModel.UserResponse, error)
+		SelectAllUsers(ctx context.Context, userParams userModel.Params) (userModel.UserResponse, error)
 	}
 
 	// Handler holds information about an API handler.
@@ -138,7 +138,11 @@ func (h *Handler) SelectUsers() http.HandlerFunc {
 			return
 		}
 
-		if userResponse, err = h.userService.SelectAllUsers(ctx, userModel.UserParams{}); err != nil {
+		//
+		// TODO: Add params from URL and convert them into user params.
+		//
+
+		if userResponse, err = h.userService.SelectAllUsers(ctx, userModel.Params{}); err != nil {
 			methods.ResponseJSON[userModel.UserResponse](w, err, http.StatusInternalServerError, userResponse)
 		}
 

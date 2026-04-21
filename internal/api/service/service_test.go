@@ -195,7 +195,7 @@ func TestService_SelectAllUsers(t *testing.T) {
 			s := New(&log.Logger{}, mr)
 			require.NotNil(t, s)
 
-			userResponse, err := s.SelectAllUsers(context.Background(), userModel.UserParams{})
+			userResponse, err := s.SelectAllUsers(context.Background(), userModel.Params{})
 			require.ErrorIs(t, err, tc.expectedErr)
 			require.Equal(t, tc.expectedResponse, userResponse)
 		})
