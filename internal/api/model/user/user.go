@@ -31,10 +31,10 @@ type (
 
 	// Pagination holds pagination information.
 	Pagination struct {
-		Count  int
-		Page   int
-		Limit  int
-		Offset int
+		Count  int `json:"count"`
+		Page   int `json:"page"`
+		Limit  int `json:"limit"`
+		Offset int `json:"offset"`
 	}
 
 	//

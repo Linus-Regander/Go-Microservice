@@ -38,7 +38,12 @@ func New(logger *log.Logger, userService UserService) *Handler {
 	}
 }
 
-// DeleteUser represents the handler for deleting a user.
+// DeleteUser godoc
+// @Summary Deletes a user
+// @Tags user
+// @Param id path string true "User ID"
+// @Success 204
+// @Router /api/service/user/{id} [delete]
 func (h *Handler) DeleteUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -66,7 +71,14 @@ func (h *Handler) DeleteUser() http.HandlerFunc {
 	}
 }
 
-// InsertUser represents the handler for inserting a user.
+// InsertUser godoc
+// @Summary Inserts a user
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param user body userModel.UserRequest true "User payload"
+// @Success 201 {object} userModel.User
+// @Router /api/service/user [post]
 func (h *Handler) InsertUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -95,7 +107,12 @@ func (h *Handler) InsertUser() http.HandlerFunc {
 	}
 }
 
-// UpdateUser represents the handler for updating a user.
+// UpdateUser godoc
+// @Summary Updates a user
+// @Tags user
+// @Param id path string true "User ID"
+// @Success 204
+// @Router /api/service/user/{id} [put]
 func (h *Handler) UpdateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -124,7 +141,12 @@ func (h *Handler) UpdateUser() http.HandlerFunc {
 	}
 }
 
-// SelectUsers represents the handler for selecting users.
+// SelectUsers godoc
+// @Summary Select users
+// @Tags user
+// @Produce json
+// @Success 200 {object} userModel.UserResponse
+// @Router /api/service/users [get]
 func (h *Handler) SelectUsers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var userResponse userModel.UserResponse

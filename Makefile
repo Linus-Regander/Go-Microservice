@@ -11,3 +11,13 @@ build:
 
 start:
 	docker compose up --build
+
+install-swagger:
+	go install github.com/swaggo/swag/cmd/swag@latest
+
+swagger:
+	swag init \
+      -g ./cmd/main.go \
+      -o docs \
+      --parseInternal \
+      --parseDependency

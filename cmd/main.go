@@ -14,8 +14,12 @@ import (
 	"github.com/Linus-Regander/Go-Microservice/internal/api/handler"
 	"github.com/Linus-Regander/Go-Microservice/internal/api/router"
 	"github.com/Linus-Regander/Go-Microservice/internal/api/service"
+
 	"github.com/go-chi/chi/v5"
+
 	"github.com/sanity-io/litter"
+
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 const serviceName = "go-microservice"
@@ -26,6 +30,10 @@ type Service struct {
 	Logger *log.Logger
 }
 
+// @title User Service API
+// @version 1.4
+// @description Microservice for User Management
+// @BasePath /
 func main() {
 	//
 	// Service Setup.
@@ -71,6 +79,7 @@ func main() {
 	//
 
 	mainRouter := chi.NewRouter()
+	mainRouter.Get("/swagger/*", httpSwagger.WrapHandler)
 
 	serviceRouter := router.New(handler.New(microService.Logger, service.New(microService.Logger, nil)))
 	mainPath, userAPI := serviceRouter.SetupChi()
