@@ -1,0 +1,121 @@
+basePath: /api/service
+definitions:
+  github_com_Linus-Regander_Go-Microservice_internal_api_model_user.Pagination:
+    properties:
+      count:
+        type: integer
+      limit:
+        type: integer
+      offset:
+        type: integer
+      page:
+        type: integer
+    type: object
+  github_com_Linus-Regander_Go-Microservice_internal_api_model_user.Role:
+    enum:
+    - admin
+    - intern
+    type: string
+    x-enum-varnames:
+    - Admin
+    - Intern
+  github_com_Linus-Regander_Go-Microservice_internal_api_model_user.User:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      role:
+        $ref: '#/definitions/github_com_Linus-Regander_Go-Microservice_internal_api_model_user.Role'
+      updatedAt:
+        type: string
+      username:
+        type: string
+    type: object
+  github_com_Linus-Regander_Go-Microservice_internal_api_model_user.UserRequest:
+    properties:
+      name:
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+    type: object
+  github_com_Linus-Regander_Go-Microservice_internal_api_model_user.UserResponse:
+    properties:
+      pagination:
+        $ref: '#/definitions/github_com_Linus-Regander_Go-Microservice_internal_api_model_user.Pagination'
+      users:
+        items:
+          $ref: '#/definitions/github_com_Linus-Regander_Go-Microservice_internal_api_model_user.User'
+        type: array
+    type: object
+info:
+  contact: {}
+  description: Microservice for User Management
+  title: User Service API
+  version: "1.4"
+paths:
+  /api/service/user:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User payload
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_Linus-Regander_Go-Microservice_internal_api_model_user.UserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_Linus-Regander_Go-Microservice_internal_api_model_user.User'
+      summary: Inserts a user
+      tags:
+      - user
+  /api/service/user/{id}:
+    delete:
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: Deletes a user
+      tags:
+      - user
+    put:
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: Updates a user
+      tags:
+      - user
+  /api/service/users:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_Linus-Regander_Go-Microservice_internal_api_model_user.UserResponse'
+      summary: Select users
+      tags:
+      - user
+swagger: "2.0"
