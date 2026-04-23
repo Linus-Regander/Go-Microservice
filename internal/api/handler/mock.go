@@ -32,7 +32,7 @@ func (ms *MockedService) UpdateUser(ctx context.Context, userRequest userModel.U
 	return ret.Error(0)
 }
 
-func (ms *MockedService) SelectAllUsers(ctx context.Context, params userModel.UserParams) (userModel.UserResponse, error) {
+func (ms *MockedService) SelectAllUsers(ctx context.Context, params userModel.Params) (userModel.UserResponse, error) {
 	ret := ms.Called(ctx, params)
 
 	return ret.Get(0).(userModel.UserResponse), ret.Error(1)

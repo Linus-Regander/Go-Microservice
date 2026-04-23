@@ -1,6 +1,12 @@
 # Go-Microservice
-Created by Linus Regander
 
-2026
+## TODO:
+- Add database, with migrator.
+- Integration tests for database.
+- Component tests for API.
+- Swagger documentation & support.
+- Docker test setup.
+- Middleware for basic access control.
 
-# README shall be updated continuously.
+### Linus Regander (Software Engineer)
+21 April 2026

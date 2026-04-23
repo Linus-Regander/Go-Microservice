@@ -3,6 +3,13 @@ package user
 import "time"
 
 const (
+	//
+	// Database Constants.
+	//
+	UsersTableName = "users"
+
+	UserIdFieldName = "id"
+
 	Admin  Role = "admin"
 	Intern Role = "intern"
 )

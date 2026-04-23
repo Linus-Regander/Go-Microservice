@@ -12,6 +12,7 @@ import (
 
 	"github.com/Linus-Regander/Go-Microservice/cmd/config"
 	"github.com/Linus-Regander/Go-Microservice/internal/api/handler"
+	userRepository "github.com/Linus-Regander/Go-Microservice/internal/api/repository/user"
 	"github.com/Linus-Regander/Go-Microservice/internal/api/router"
 	"github.com/Linus-Regander/Go-Microservice/internal/api/service"
 
@@ -81,7 +82,7 @@ func main() {
 	mainRouter := chi.NewRouter()
 	mainRouter.Get("/swagger/*", httpSwagger.WrapHandler)
 
-	serviceRouter := router.New(handler.New(microService.Logger, service.New(microService.Logger, nil)))
+	serviceRouter := router.New(handler.New(microService.Logger, service.New(microService.Logger, userRepository.New(microService.Logger, nil))))
 	mainPath, userAPI := serviceRouter.SetupChi()
 
 	mainRouter.Group(func(r chi.Router) {
