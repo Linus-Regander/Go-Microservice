@@ -11,7 +11,23 @@ import (
 type (
 	// Config holds environment configurations.
 	Config struct {
-		Service Service
+		DB       DB
+		Migrator Migrator
+		Service  Service
+	}
+
+	// DB holds the environment variables for a DB setup.
+	DB struct {
+		Host     string `env:"DB_HOST"`
+		Port     string `env:"DB_PORT"`
+		Username string `env:"DB_USERNAME"`
+		Password string `env:"DB_PASSWORD"`
+		Database string `env:"DB_DATABASE"`
+	}
+
+	// Migrator holds the environment variables for a DB migrator.
+	Migrator struct {
+		Path string `env:"DB_MIGRATOR_PATH"`
 	}
 
 	// Service holds the environment variables for a service setup.
