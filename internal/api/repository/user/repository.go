@@ -7,7 +7,8 @@ import (
 	"log"
 
 	userModel "github.com/Linus-Regander/Go-Microservice/internal/api/model/user"
-	"github.com/Linus-Regander/Go-Microservice/pkg/database"
+	"github.com/Linus-Regander/Go-Microservice/pkg/database/query"
+	"github.com/blockloop/scan/v2"
 	"github.com/huandu/go-sqlbuilder"
 )
 
@@ -121,10 +122,8 @@ func (ur *UserRepository) SelectAllUsers(ctx context.Context, userParams userMod
 		}
 	}(rows)
 
-	for rows.Next() {
-		if err = rows.Scan(&users); err != nil {
-			return users, pagination, err
-		}
+	if err = scan.RowsStrict(&users, rows); err != nil {
+		return users, pagination, err
 	}
 
 	//
@@ -153,8 +152,8 @@ func (ur *UserRepository) insertQuery(user userModel.User) (string, []interface{
 
 	return insertBuilder.
 		InsertInto(userModel.UsersTableName).
-		Cols(database.ColumnNames(user)...).
-		Values(database.Values(user)...).
+		Cols(query.ColumnNames(user)...).
+		Values(query.Values(user)...).
 		Build()
 }
 
@@ -165,7 +164,7 @@ func (ur *UserRepository) updateQuery(user userModel.User) (string, []interface{
 
 	assignments := make([]string, 0)
 
-	for column, value := range database.ColumnValues(user) {
+	for column, value := range query.ColumnValues(user) {
 		assignments = append(
 			assignments,
 			updateBuilder.Assign(column, value),
@@ -182,10 +181,10 @@ func (ur *UserRepository) updateQuery(user userModel.User) (string, []interface{
 func (ur *UserRepository) selectQuery(userParams userModel.Params) (string, []interface{}) {
 	selectBuilder := sqlbuilder.
 		NewSelectBuilder().
-		Select(database.ColumnNames(userModel.User{})...).
+		Select(query.ColumnNames(userModel.User{})...).
 		From(userModel.UsersTableName)
 
-	conditions := database.ColumnValues(userParams)
+	conditions := query.ColumnValues(userParams)
 
 	if len(conditions) > 0 {
 		for condition, arg := range conditions {

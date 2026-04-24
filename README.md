@@ -1,10 +1,9 @@
 # Go-Microservice
+Version 1.4.0
 
 ## TODO:
-- Add database, with migrator.
 - Integration tests for database.
 - Component tests for API.
-- Swagger documentation & support.
 - Docker test setup.
 - Middleware for basic access control.
 

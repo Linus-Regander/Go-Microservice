@@ -12,7 +12,7 @@ const (
 	//
 
 	// mainPath represents the main api path.
-	mainPath = "/api"
+	mainPath = "/service"
 
 	//
 	// User API paths.

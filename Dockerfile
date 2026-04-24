@@ -10,7 +10,6 @@ RUN go mod download
 
 COPY . .
 
-# build main package in cmd/
 RUN go build -o service ./cmd
 
 # ---- runtime stage ----
@@ -20,6 +19,7 @@ WORKDIR /app
 
 COPY --from=builder /app/docs ./docs
 COPY --from=builder /app/service .
+COPY --from=builder /app/assets ./assets
 
 EXPOSE 8080
 

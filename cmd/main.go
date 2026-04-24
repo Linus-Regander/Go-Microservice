@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -9,21 +10,26 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
+
+	"github.com/Linus-Regander/Go-Microservice/pkg/database"
+	"github.com/go-chi/chi/v5"
+
+	"github.com/sanity-io/litter"
+
+	httpSwagger "github.com/swaggo/http-swagger"
 
 	"github.com/Linus-Regander/Go-Microservice/cmd/config"
 	"github.com/Linus-Regander/Go-Microservice/internal/api/handler"
 	userRepository "github.com/Linus-Regander/Go-Microservice/internal/api/repository/user"
 	"github.com/Linus-Regander/Go-Microservice/internal/api/router"
 	"github.com/Linus-Regander/Go-Microservice/internal/api/service"
-
-	"github.com/go-chi/chi/v5"
-
-	"github.com/sanity-io/litter"
-
-	httpSwagger "github.com/swaggo/http-swagger"
 )
 
-const serviceName = "go-microservice"
+const (
+	serviceName   = "go-microservice"
+	shutdownDelay = 5 * time.Second
+)
 
 type Service struct {
 	Config *config.Config
@@ -58,7 +64,7 @@ func main() {
 			startupLogger.Fatal(fmt.Sprintf("recovered panic: %v", r))
 		}
 
-		startupLogger.Print("service shutting down")
+		startupLogger.Print("service shutting down ...")
 
 		cancelCtx()
 
@@ -76,17 +82,58 @@ func main() {
 	microService.Logger = startupLogger
 
 	//
+	// Setup DB.
+	//
+	dbSetup := database.New(microService.Logger, "mysql", database.Config{
+		Host:     microService.Config.DB.Host,
+		Port:     microService.Config.DB.Port,
+		Username: microService.Config.DB.Username,
+		Password: microService.Config.DB.Password,
+		Database: microService.Config.DB.Database,
+	})
+
+	microService.Logger.Print("running database migrations ... ")
+
+	if err = dbSetup.RunMigrations(microService.Config.Migrator.Path); err != nil {
+		startupLogger.Print(fmt.Errorf("database migrations failed: %w", err))
+
+		return
+	}
+
+	microService.Logger.Print("database migrations complete ... ")
+
+	microService.Logger.Print("running database setup ... ")
+
+	serviceDb, err := dbSetup.SetupDB(serviceCtx)
+	if err != nil {
+		startupLogger.Print(fmt.Errorf("setup database failed: %w", err))
+
+		return
+	}
+	defer func(serviceDb *sql.DB) {
+		if err = serviceDb.Close(); err != nil {
+			microService.Logger.Print("failed to close database connection ... ")
+
+			return
+		}
+	}(serviceDb)
+
+	microService.Logger.Print("database setup complete ... ")
+
+	//
 	// Service API.
 	//
+
+	microService.Logger.Print("setting up service API ... ")
 
 	mainRouter := chi.NewRouter()
 	mainRouter.Get("/swagger/*", httpSwagger.WrapHandler)
 
-	serviceRouter := router.New(handler.New(microService.Logger, service.New(microService.Logger, userRepository.New(microService.Logger, nil))))
+	serviceRouter := router.New(handler.New(microService.Logger, service.New(microService.Logger, userRepository.New(microService.Logger, serviceDb))))
 	mainPath, userAPI := serviceRouter.SetupChi()
 
 	mainRouter.Group(func(r chi.Router) {
-		r.Route("/service", func(r chi.Router) {
+		r.Route("/api", func(r chi.Router) {
 			r.Mount(mainPath, userAPI)
 		})
 	})
@@ -104,31 +151,36 @@ func main() {
 	// Service Startup.
 	//
 
+	microService.Logger.Print("starting service ... ")
+
 	srv := &http.Server{
-		Addr: microService.Config.Service.Port,
+		Addr:    fmt.Sprintf(":%s", microService.Config.Service.Port),
+		Handler: mainRouter,
 	}
 
 	go func() {
 		if err = srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			microService.Logger.Print(fmt.Errorf("server failed to start due to error: %w", err))
+
 			return
 		}
 	}()
 	defer func() {
-		shutdownCtx, shutdownCancelCtx := context.WithCancel(serviceCtx)
-		defer shutdownCancelCtx()
+		shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), shutdownDelay)
+		defer shutdownRelease()
 
 		if err = srv.Shutdown(shutdownCtx); err != nil {
-			microService.Logger.Print(fmt.Errorf("Shutdown recieved error: %w", err))
+			microService.Logger.Print(fmt.Errorf("shutdown recieved error: %w", err))
 
 			return
 		} else {
-			microService.Logger.Print("Server shutdown successfully")
+			microService.Logger.Print("service shutdown successfully ...")
 
 			return
 		}
 	}()
 
-	fmt.Println("Service successfully started")
+	fmt.Println("service successfully started")
 
 	<-shutdown()
 }

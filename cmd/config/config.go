@@ -8,10 +8,29 @@ import (
 	"strings"
 )
 
+// ErrInvalidPortVariable represents an error for when the port variable is invalid, contains: ":".
+var ErrInvalidPortVariable = errors.New("invalid port variable")
+
 type (
 	// Config holds environment configurations.
 	Config struct {
-		Service Service
+		DB       DB
+		Migrator Migrator
+		Service  Service
+	}
+
+	// DB holds the environment variables for a DB setup.
+	DB struct {
+		Host     string `env:"DB_HOST"`
+		Port     string `env:"DB_PORT"`
+		Username string `env:"DB_USERNAME"`
+		Password string `env:"DB_PASSWORD"`
+		Database string `env:"DB_DATABASE"`
+	}
+
+	// Migrator holds the environment variables for a DB migrator.
+	Migrator struct {
+		Path string `env:"DB_MIGRATIONS_PATH"`
 	}
 
 	// Service holds the environment variables for a service setup.
@@ -26,6 +45,10 @@ func Setup() (*Config, error) {
 
 	if err := loadEnv(cfg); err != nil {
 		return cfg, err
+	}
+
+	if cfg.Service.Port == "" || strings.Contains(cfg.Service.Port, ":") {
+		return nil, ErrInvalidPortVariable
 	}
 
 	return cfg, nil
