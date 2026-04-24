@@ -48,11 +48,12 @@ func (h *Handler) DeleteUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		if err := methods.Authorized(ctx); err != nil {
-			methods.ResponseJSON[any](w, err, http.StatusUnauthorized, nil)
-
-			return
-		}
+		// TODO: Re-add when authorization can be derived from ctx.
+		//if err := methods.Authorized(ctx); err != nil {
+		//	methods.ResponseJSON[any](w, err, http.StatusUnauthorized, nil)
+		//
+		//	return
+		//}
 
 		userId, err := methods.UrlParam(r)
 		if err != nil { // should never occur since chi handles 404 if id is missing.
@@ -83,12 +84,13 @@ func (h *Handler) InsertUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		err := methods.Authorized(ctx)
-		if err != nil {
-			methods.ResponseJSON[any](w, err, http.StatusUnauthorized, nil)
-
-			return
-		}
+		// TODO: Re-add when authorization can be derived from ctx.
+		//err := methods.Authorized(ctx)
+		//if err != nil {
+		//	methods.ResponseJSON[any](w, err, http.StatusUnauthorized, nil)
+		//
+		//	return
+		//}
 
 		userRequest, err := methods.ParseRequestBody[userModel.UserRequest](r)
 		if err != nil {
@@ -117,12 +119,13 @@ func (h *Handler) UpdateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		err := methods.Authorized(ctx)
-		if err != nil {
-			methods.ResponseJSON[any](w, err, http.StatusUnauthorized, nil)
-
-			return
-		}
+		// TODO: Re-add when authorization can be derived from ctx.
+		//err := methods.Authorized(ctx)
+		//if err != nil {
+		//	methods.ResponseJSON[any](w, err, http.StatusUnauthorized, nil)
+		//
+		//	return
+		//}
 
 		requestBody, err := methods.ParseRequestBody[userModel.UserRequest](r)
 		if err != nil {
@@ -153,19 +156,23 @@ func (h *Handler) SelectUsers() http.HandlerFunc {
 
 		ctx := r.Context()
 
-		err := methods.Authorized(ctx)
-		if err != nil {
-			methods.ResponseJSON[userModel.UserResponse](w, err, http.StatusUnauthorized, userResponse)
-
-			return
-		}
+		// TODO: Re-add when authorization can be derived from ctx.
+		//err := methods.Authorized(ctx)
+		//if err != nil {
+		//	methods.ResponseJSON[userModel.UserResponse](w, err, http.StatusUnauthorized, userResponse)
+		//
+		//	return
+		//}
 
 		//
 		// TODO: Add params from URL and convert them into user params.
 		//
 
-		if userResponse, err = h.userService.SelectAllUsers(ctx, userModel.Params{}); err != nil {
+		userResponse, err := h.userService.SelectAllUsers(ctx, userModel.Params{})
+		if err != nil {
 			methods.ResponseJSON[userModel.UserResponse](w, err, http.StatusInternalServerError, userResponse)
+
+			return
 		}
 
 		methods.ResponseJSON[userModel.UserResponse](w, nil, http.StatusOK, userResponse)

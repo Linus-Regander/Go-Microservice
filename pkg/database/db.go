@@ -63,7 +63,7 @@ func (d *Database) RunMigrations(migrationPath string) error {
 
 	migrator, err := migrate.New(
 		fmt.Sprintf("file://%s", absPath),
-		d.dsn(),
+		fmt.Sprintf("%s://%s", d.driver, d.dsn()),
 	)
 	if err != nil {
 		return err
@@ -87,11 +87,13 @@ func (d *Database) RunMigrations(migrationPath string) error {
 
 func (d *Database) dsn() string {
 	sqlCfg := mysql.Config{
-		User:   d.config.Username,
-		Passwd: d.config.Password,
-		Net:    "tcp",
-		Addr:   fmt.Sprintf("%s:%d", d.config.Host, d.config.Port),
-		DBName: d.config.Database,
+		User:                 d.config.Username,
+		Passwd:               d.config.Password,
+		Net:                  "tcp",
+		Addr:                 fmt.Sprintf("%s:%s", d.config.Host, d.config.Port),
+		DBName:               d.config.Database,
+		AllowNativePasswords: true,
+		ParseTime:            true,
 	}
 
 	return sqlCfg.FormatDSN()

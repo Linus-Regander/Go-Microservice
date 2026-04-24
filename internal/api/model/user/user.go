@@ -6,10 +6,13 @@ const (
 	//
 	// Database Constants.
 	//
-	UsersTableName = "users"
 
+	UsersTableName  = "user"
 	UserIdFieldName = "id"
 
+	//
+	// Enums.
+	//
 	Admin  Role = "admin"
 	Intern Role = "intern"
 )
@@ -50,12 +53,12 @@ type (
 
 	// User holds information of a user.
 	User struct {
-		ID        string    `json:"id" db:"id"`
+		ID        string    `json:"id" db:"id_u"`
 		Username  string    `json:"username" db:"username"`
 		Name      string    `json:"name" db:"name"`
 		Role      Role      `json:"role" db:"role"`
-		CreatedAt time.Time `json:"createdAt" db:"created_at"`
-		UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
+		CreatedAt time.Time `json:"createdAt" db:"created_at_u"`
+		UpdatedAt time.Time `json:"updatedAt" db:"updated_at_u"`
 	}
 
 	// Users represents a slice of users.

@@ -8,6 +8,7 @@ import (
 
 	userModel "github.com/Linus-Regander/Go-Microservice/internal/api/model/user"
 	"github.com/Linus-Regander/Go-Microservice/pkg/database/query"
+	"github.com/blockloop/scan/v2"
 	"github.com/huandu/go-sqlbuilder"
 )
 
@@ -121,10 +122,8 @@ func (ur *UserRepository) SelectAllUsers(ctx context.Context, userParams userMod
 		}
 	}(rows)
 
-	for rows.Next() {
-		if err = rows.Scan(&users); err != nil {
-			return users, pagination, err
-		}
+	if err = scan.RowsStrict(&users, rows); err != nil {
+		return users, pagination, err
 	}
 
 	//

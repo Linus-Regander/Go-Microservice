@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/Linus-Regander/Go-Microservice/pkg/database"
 	"github.com/go-chi/chi/v5"
@@ -25,7 +26,10 @@ import (
 	"github.com/Linus-Regander/Go-Microservice/internal/api/service"
 )
 
-const serviceName = "go-microservice"
+const (
+	serviceName   = "go-microservice"
+	shutdownDelay = 5 * time.Second
+)
 
 type Service struct {
 	Config *config.Config
@@ -129,7 +133,7 @@ func main() {
 	mainPath, userAPI := serviceRouter.SetupChi()
 
 	mainRouter.Group(func(r chi.Router) {
-		r.Route("/service", func(r chi.Router) {
+		r.Route("/api", func(r chi.Router) {
 			r.Mount(mainPath, userAPI)
 		})
 	})
@@ -150,17 +154,20 @@ func main() {
 	microService.Logger.Print("starting service ... ")
 
 	srv := &http.Server{
-		Addr: microService.Config.Service.Port,
+		Addr:    fmt.Sprintf(":%s", microService.Config.Service.Port),
+		Handler: mainRouter,
 	}
 
 	go func() {
 		if err = srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			microService.Logger.Print(fmt.Errorf("server failed to start due to error: %w", err))
+
 			return
 		}
 	}()
 	defer func() {
-		shutdownCtx, shutdownCancelCtx := context.WithCancel(serviceCtx)
-		defer shutdownCancelCtx()
+		shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), shutdownDelay)
+		defer shutdownRelease()
 
 		if err = srv.Shutdown(shutdownCtx); err != nil {
 			microService.Logger.Print(fmt.Errorf("shutdown recieved error: %w", err))
